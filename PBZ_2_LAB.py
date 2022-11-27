@@ -70,10 +70,36 @@ def get_list_of_sex_old_employees(cursor, sex, old):
 
 def get_the_repairiest_departament(cursor):
     cursor.execute("""
-        SELECT e.e_id, eo.departament
-        FROM equipment as e, equipment_ownership as eo
-        WHERE e.e_id = eo.e_id AND 
+        SELECT t1.departament, COUNT(t1.e_id) as repair_count
+
+        FROM
+
+        equipment_repair as er,
+
+        (SELECT eo1.e_id, eo1.departament, eo1.date_of_start as start, eo2.date_of_start as end
+        FROM equipment_ownership as eo1, equipment_ownership as eo2
+        WHERE eo1.e_id = eo2.e_id AND eo1.date_of_start < eo2.date_of_start
+    
+        GROUP BY eo1.date_of_start
+        HAVING MAX(eo2.date_of_start)
+
+        UNION
+
+        SELECT eo1.e_id, eo1.departament, eo1.date_of_start as start, DATE_ADD(eo1.date_of_start, INTERVAL 1000 YEAR) as end
+        FROM equipment_ownership as eo1, equipment_ownership as eo2
+        WHERE eo1.e_id = eo2.e_id AND eo1.date_of_start = eo2.date_of_start
+    
+        GROUP BY eo1.e_id
+        HAVING COUNT(eo1.e_id) = 1
+        ) as t1
+
+        WHERE er.e_id = t1.e_id AND repair_date BETWEEN start AND end
+        GROUP BY departament
     """)
+
+    result = cursor.fetchall()
+
+    return max(result, key = lambda x: x[1])
 
 if __name__ == '__main__':
     try:
@@ -95,7 +121,7 @@ if __name__ == '__main__':
 
         #print(get_list_of_sex_old_employees(cursor, "M", 24))
 
-        print(get_count_of_equipment_by_departament(cursor, "HR", "Freezer", "2023-1-1"))
+        print(get_the_repairiest_departament(cursor))
 
         db.commit()
         
