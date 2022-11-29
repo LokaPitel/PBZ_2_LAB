@@ -33,6 +33,9 @@ def edit_of_ownership_pk(cursor, old_e_id, old_date_of_start, e_id, date_of_star
                           date_of_start = %s
                       WHERE e_id = %s AND date_of_start = %s""", (e_id, date_of_start, old_e_id, old_date_of_start))
 
+def delete_from_ownership_by_id(cursor, e_id):
+    cursor.execute("""DELETE FROM equipment_ownership
+                      WHERE e_id = %s""", (e_id,))
 
 def delete_from_ownership(cursor, e_id, date_of_start):
     cursor.execute("""DELETE FROM equipment_ownership

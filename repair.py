@@ -22,6 +22,14 @@ def edit_of_repair_pk(cursor, old_e_id, old_repair_date, p_id, repair_date):
                       WHERE e_id = %s AND repair_date = %s""", (p_id, repair_date, old_e_id, old_repair_date))
 
 
+def delete_from_repair_by_id(cursor, e_id):
+    cursor.execute("""DELETE FROM equipment_repair
+                      WHERE e_id = %s""", (e_id,))
+
+def delete_from_repair_by_pid(cursor, p_id):
+    cursor.execute("""DELETE FROM equipment_repair
+                      WHERE querier_id = %s OR applying_id = %s OR repairing_id = %s""", (p_id, p_id, p_id))
+
 def delete_from_repair(cursor, e_id, repair_date):
     cursor.execute("""DELETE FROM equipment_repair
                       WHERE e_id = %s AND repair_date = %s""", (e_id, repair_date))
