@@ -28,7 +28,7 @@ def add_to_history(cursor, p_id, role, departament, date_of_start):
 def edit_of_history(cursor, p_id, role, departament, date_of_start):
     cursor.execute("""UPDATE employee_history 
                       SET role = %s,
-                          departament = %s,
+                          departament = %s
                       WHERE p_id = %s AND date_of_start = %s""", (role, departament, p_id, date_of_start))
 
 
@@ -38,9 +38,11 @@ def edit_of_history_pk(cursor, old_p_id, old_date_of_start, p_id, date_of_start)
                           date_of_start = %s
                       WHERE p_id = %s AND date_of_start = %s""", (p_id, date_of_start, old_p_id, old_date_of_start))
 
+
 def delete_from_history_by_id(cursor, p_id):
     cursor.execute("""DELETE FROM employee_history
                       WHERE p_id = %s""", (p_id,))
+
 
 def delete_from_history(cursor, p_id, date_of_start):
     cursor.execute("""DELETE FROM employee_history
@@ -56,6 +58,7 @@ def edit_of_deleted_employee(cursor, old_p_id, new_p_id):
     cursor.execute("""UPDATE deleted_employee
                       SET p_id = %s
                       WHERE p_id = %s""", (new_p_id, old_p_id))
+
 
 def undelete_employee(cursor, p_id):
     cursor.execute("""DELETE FROM deleted_employee

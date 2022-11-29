@@ -1,3 +1,4 @@
+from email.headerregistry import DateHeader
 from sqlite3 import Cursor, connect
 import sys
 from PySide6.QtCore import Slot, QSize
@@ -132,6 +133,8 @@ def createTableWidget(cursor, table_name):
 
     for row in cursor.fetchall():
         heading_list.append(row[0])
+
+    table.setColumnCount(len(heading_list))
 
     table.setHorizontalHeaderLabels(heading_list)
     table.adjustSize()
@@ -519,7 +522,1108 @@ class DeleteEmployeeDialog(QDialog):
     def close_dialog(self):
         self.close()
 
+#### EMPLOYEE HISTORY #########
+
+class ShowEmployeeHistory(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Employee history table")
+
+        table = createTableWidget(db.cursor(buffered=True), "employee_history")
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+
+class AddEmployeeHistoryDialog(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Add new field to Employee history")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.p_id = QLineEdit()
+        self.role = QLineEdit()
+        self.departament = QLineEdit()
+        self.date_of_start = QDateEdit()
+
+        self.date_of_start.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.p_id)
+        layout.addRow("Role: ", self.role)
+        layout.addRow("Departament: ", self.departament)
+        layout.addRow("Date of start: ", self.date_of_start)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            add_to_history(self.db.cursor(buffered=True), self.p_id.text(), self.role.text(), self.departament.text(),
+                           self.date_of_start.text())
+
+            self.db.commit()
+
+            self.close()
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class EditEmployeeHistoryDialog(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Edit field of Employee history")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.p_id = QLineEdit()
+        self.role = QLineEdit()
+        self.departament = QLineEdit()
+        self.date_of_start = QDateEdit()
+
+        self.date_of_start.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.p_id)
+        layout.addRow("Role: ", self.role)
+        layout.addRow("Departament: ", self.departament)
+        layout.addRow("Date of start: ", self.date_of_start)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            edit_of_history(self.db.cursor(buffered=True), self.p_id.text(), self.role.text(), self.departament.text(),
+                           self.date_of_start.text())
+
+            self.db.commit()
+            self.close()
+
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class DeleteEmployeeHistoryDialog(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Delete field of Employee history")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.p_id = QLineEdit()
+        self.date_of_start = QDateEdit()
+
+        self.date_of_start.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.p_id)
+        layout.addRow("Date of start: ", self.date_of_start)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            delete_from_history(self.db.cursor(buffered=True), self.p_id.text(), self.date_of_start.text())
+
+            self.db.commit()
+            self.close()
+
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+#### EQUIPMENT OWNERSHIP ######
+
+class ShowEquipmentOwnership(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment ownership table")
+
+        table = createTableWidget(db.cursor(buffered=True), "equipment_ownership")
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+
+class AddEquipmentOwnership(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Add new field to Equipment ownership")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.departament = QLineEdit()
+        self.date_of_start = QDateEdit()
+
+        self.date_of_start.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Departament: ", self.departament)
+        layout.addRow("Date of start: ", self.date_of_start)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            add_to_ownership(self.db.cursor(buffered=True), self.e_id.text(), self.departament.text(),
+                           self.date_of_start.text())
+
+            self.db.commit()
+
+            self.close()
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class EditEquipmentOwnership(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Add new field to Equipment ownership")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.departament = QLineEdit()
+        self.date_of_start = QDateEdit()
+
+        self.date_of_start.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Departament: ", self.departament)
+        layout.addRow("Date of start: ", self.date_of_start)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            edit_of_ownership(self.db.cursor(buffered=True), self.e_id.text(), self.departament.text(),
+                           self.date_of_start.text())
+
+            self.db.commit()
+            self.close()
+
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class DeleteEquipmentOwnership(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Edit field of Equipment ownership")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.date_of_start = QDateEdit()
+
+        self.date_of_start.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Date of start: ", self.date_of_start)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            delete_from_ownership(self.db.cursor(buffered=True), self.e_id.text(), self.date_of_start.text())
+
+            self.db.commit()
+            self.close()
+
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+#### EQUIPMENT REPAIR ##########
+
+class ShowEquipmentRepair(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment repair table")
+
+        table = createTableWidget(db.cursor(buffered=True), "equipment_repair")
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+
+class AddEquipmentRepair(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Add new field to Equipment repair")
+
+        self.db = db
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.repair_date = QDateEdit()
+        self.repair_type = QLineEdit()
+        self.repair_time = QLineEdit()
+        self.querier_id = QLineEdit()
+        self.applying_id = QLineEdit()
+        self.repairing_id = QLineEdit()
+        #self.r_id = QLineEdit()
+
+        self.repair_date.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Repair date: ", self.repair_date)
+        layout.addRow("Repair type: ", self.repair_type)
+        layout.addRow("Repair time: ", self.repair_time)
+        layout.addRow("Querier id: ", self.querier_id)
+        layout.addRow("Applying id: ", self.applying_id)
+        layout.addRow("Repairing id: ", self.repairing_id)
+        #layout.addRow("Document id: ", self.repairing_id)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            add_to_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text(), self.repair_type.text(),
+                          self.repair_time.text(), self.querier_id.text(), self.applying_id.text(), self.repairing_id.text(), 0)
+
+            self.db.commit()
+
+            self.close()
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class EditEquipmentRepair(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Edit field of Equipment repair")
+
+        self.db = db
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.repair_date = QDateEdit()
+        self.repair_type = QLineEdit()
+        self.repair_time = QLineEdit()
+        self.querier_id = QLineEdit()
+        self.applying_id = QLineEdit()
+        self.repairing_id = QLineEdit()
+        self.r_id = QLineEdit()
+
+        self.repair_date.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Repair date: ", self.repair_date)
+        layout.addRow("Repair type: ", self.repair_type)
+        layout.addRow("Repair time: ", self.repair_time)
+        layout.addRow("Querier id: ", self.querier_id)
+        layout.addRow("Applying id: ", self.applying_id)
+        layout.addRow("Repairing id: ", self.repairing_id)
+        layout.addRow("Document id: ", self.r_id)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            edit_of_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text(), self.repair_type.text(),
+                           self.repair_time.text(), self.querier_id.text(), self.applying_id.text(), self.repairing_id.text(),
+                           self.r_id.text())
+
+            self.db.commit()
+
+            self.close()
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class DeleteEquipmentRepair(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Delete field of Equipment repair")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.repair_date = QDateEdit()
+
+        self.repair_date.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Repair date: ", self.repair_date)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            delete_from_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text())
+
+            self.db.commit()
+            self.close()
+
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+#### REPAIR DOCUMENT ###########
+
+class ShowRepairDocument(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Repair document table")
+
+        table = createTableWidget(db.cursor(buffered=True), "repair_document")
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+
+class AddRepairDocument(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Add new field to Repair document")
+
+        self.db = db
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.r_id = QLineEdit()
+        self.part_name = QLineEdit()
+        self.date_of_buy = QDateEdit()
+        self.price = QLineEdit()
+
+        self.date_of_buy.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.r_id)
+        layout.addRow("Part name: ", self.part_name)
+        layout.addRow("Date of buy: ", self.date_of_buy)
+        layout.addRow("Price: ", self.price)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            add_to_document(self.db.cursor(buffered=True), self.r_id.text(), self.part_name.text(), self.date_of_buy.text(),
+                            self.price.text())
+
+            self.db.commit()
+
+            self.close()
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class EditRepairDocument(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Edit field of Repair document")
+
+        self.db = db
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.repair_date = QDateEdit()
+        self.repair_type = QLineEdit()
+        self.repair_time = QLineEdit()
+        self.querier_id = QLineEdit()
+        self.applying_id = QLineEdit()
+        self.repairing_id = QLineEdit()
+        self.r_id = QLineEdit()
+
+        self.repair_date.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Repair date: ", self.repair_date)
+        layout.addRow("Repair type: ", self.repair_type)
+        layout.addRow("Repair time: ", self.repair_time)
+        layout.addRow("Querier id: ", self.querier_id)
+        layout.addRow("Applying id: ", self.applying_id)
+        layout.addRow("Repairing id: ", self.repairing_id)
+        layout.addRow("Document id: ", self.r_id)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            edit_of_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text(), self.repair_type.text(),
+                           self.repair_time.text(), self.querier_id.text(), self.applying_id.text(), self.repairing_id.text(),
+                           self.r_id.text())
+
+            self.db.commit()
+
+            self.close()
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
+
+class DeleteRepairDocument(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Edit field of Repair document")
+
+        self.db = db;
+
+        dialog_layout = QVBoxLayout()
+        
+        layout = QFormLayout()
+
+        self.e_id = QLineEdit()
+        self.repair_date = QDateEdit()
+
+        self.repair_date.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.save_to_db)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Id: ", self.e_id)
+        layout.addRow("Repair date: ", self.repair_date)
+        
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+    def save_to_db(self):
+        try:
+            delete_from_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text())
+
+            self.db.commit()
+            self.close()
+
+        except mysql.connector.Error as err:
+            print(err)
+
+    def close_dialog(self):
+        self.close()
+
 ################################
+
+###############################
+## FUNCTIONS ##################
+###############################
+
+class CountOfEquipment(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Count of equipment")
+        self.db = db
+
+        self.departament = QLineEdit()
+        self.name = QLineEdit()
+        self.last_year = QDateEdit()
+
+
+        dialog_layout = QVBoxLayout()
+        layout = QFormLayout()
+
+        self.last_year.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.slot_show_count)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Departament: ", self.departament)
+        layout.addRow("Name: ", self.name)
+        layout.addRow("Last year: ", self.last_year)
+
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+
+    def slot_show_count(self):
+        dialog = ShowEquipmentCountOfEquipment(self.db, self.departament.text(), self.name.text(), self.last_year.text())
+        dialog.exec()
+
+    def close_dialog(self):
+        self.close()
+
+class ShowEquipmentCountOfEquipment(QDialog):
+    def __init__(self, db, departament, name, last_year, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment repair table")
+
+        table = QTableWidget()
+
+        cursor = db.cursor(buffered=True)
+
+        cursor.execute("""
+        SELECT COUNT(DISTINCT e.e_id)
+        FROM equipment as e, equipment_ownership as eo
+        WHERE e.e_id = eo.e_id AND eo.departament = %s AND e.name = %s
+        AND eo.date_of_start BETWEEN DATE_SUB(%s, INTERVAL 3 YEAR) AND DATE(%s)""", (departament, name, last_year, last_year))
+
+        result = cursor.fetchall()
+
+        table.setRowCount(len(result))
+
+        if (len(result) == 0):
+            table.setColumnCount(1)
+
+        else:
+            table.setColumnCount(len(result[0]))
+        
+        #cursor.execute(f"DESCRIBE {}")
+
+        heading_list = ["Count"]
+
+        table.setColumnCount(len(heading_list))
+
+        table.setHorizontalHeaderLabels(heading_list)
+        table.adjustSize()
+
+        for r_index, row in enumerate(result):
+            for c_index, col in enumerate(row):
+                table.setItem(r_index, c_index, QTableWidgetItem(str(col)))
+       
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+class EmployeesByDepartament(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Count of equipment")
+        self.db = db
+
+        self.departament = QLineEdit()
+
+        dialog_layout = QVBoxLayout()
+        layout = QFormLayout()
+
+        #self.last_year.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.slot_show_count)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Departament: ", self.departament)
+
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+
+    def slot_show_count(self):
+        dialog = ShowEmployeeByDepartament(self.db, self.departament.text())
+        dialog.exec()
+
+    def close_dialog(self):
+        self.close()
+
+class ShowEmployeeByDepartament(QDialog):
+    def __init__(self, db, departament, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment repair table")
+
+        table = QTableWidget()
+
+        cursor = db.cursor(buffered=True)
+
+        cursor.execute("""
+        SELECT surname, name, fathername, birthday_date
+        FROM employee as e, employee_history as eh
+        WHERE e.p_id = eh.p_id AND eh.departament = %s""", (departament, ))
+
+        result = cursor.fetchall()
+
+        table.setRowCount(len(result))
+
+        if (len(result) == 0):
+            table.setColumnCount(1)
+
+        else:
+            table.setColumnCount(len(result[0]))
+        
+        #cursor.execute(f"DESCRIBE {}")
+
+        heading_list = ["Surname", "Name", "Fathername", "Birthday date"]
+
+        table.setColumnCount(len(heading_list))
+
+        table.setHorizontalHeaderLabels(heading_list)
+        table.adjustSize()
+
+        for r_index, row in enumerate(result):
+            for c_index, col in enumerate(row):
+                table.setItem(r_index, c_index, QTableWidgetItem(str(col)))
+       
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+class EmployeesBySexAndOld(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Count of equipment")
+        self.db = db
+
+        self.sex = QLineEdit()
+        self.old = QLineEdit()
+
+        dialog_layout = QVBoxLayout()
+        layout = QFormLayout()
+
+        #self.last_year.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.slot_show_count)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Sex: ", self.sex)
+        layout.addRow("Old: ", self.old)
+
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+
+    def slot_show_count(self):
+        dialog = ShowEmployeeBySexAndOld(self.db, self.sex.text(), self.old.text())
+        dialog.exec()
+
+    def close_dialog(self):
+        self.close()
+
+class ShowEmployeeBySexAndOld(QDialog):
+    def __init__(self, db, sex, old, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment repair table")
+
+        table = QTableWidget()
+
+        cursor = db.cursor(buffered=True)
+
+        cursor.execute("""
+        SELECT surname, name, fathername, birthday_date
+        FROM employee
+        WHERE sex = %s AND old = %s""", (sex, old))
+
+        result = cursor.fetchall()
+
+        table.setRowCount(len(result))
+
+        if (len(result) == 0):
+            table.setColumnCount(1)
+
+        else:
+            table.setColumnCount(len(result[0]))
+        
+        #cursor.execute(f"DESCRIBE {}")
+
+        heading_list = ["Surname", "Name", "Fathername", "Birthday date"]
+
+        table.setColumnCount(len(heading_list))
+
+        table.setHorizontalHeaderLabels(heading_list)
+        table.adjustSize()
+
+        for r_index, row in enumerate(result):
+            for c_index, col in enumerate(row):
+                table.setItem(r_index, c_index, QTableWidgetItem(str(col)))
+       
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
+
+class ShowRepairiestDepartament(QDialog):
+    def __init__(self, db, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment repair table")
+
+        table = QTableWidget()
+
+        cursor = db.cursor(buffered=True)
+
+        cursor.execute("""
+        SELECT t1.departament, COUNT(t1.e_id) as repair_count
+
+        FROM
+
+        equipment_repair as er,
+
+        (SELECT eo1.e_id, eo1.departament, eo1.date_of_start as start, eo2.date_of_start as end
+        FROM equipment_ownership as eo1, equipment_ownership as eo2
+        WHERE eo1.e_id = eo2.e_id AND eo1.date_of_start < eo2.date_of_start
+    
+        GROUP BY eo1.date_of_start
+        HAVING MAX(eo2.date_of_start)
+
+        UNION
+
+        SELECT eo1.e_id, eo1.departament, eo1.date_of_start as start, DATE_ADD(eo1.date_of_start, INTERVAL 1000 YEAR) as end
+        FROM equipment_ownership as eo1, equipment_ownership as eo2
+        WHERE eo1.e_id = eo2.e_id AND eo1.date_of_start = eo2.date_of_start
+    
+        GROUP BY eo1.e_id
+        HAVING COUNT(eo1.e_id) = 1
+        ) as t1
+
+        WHERE er.e_id = t1.e_id AND repair_date BETWEEN start AND end
+        GROUP BY departament
+        """)
+
+        result = cursor.fetchall()
+
+        table.setRowCount(len(result))
+
+        if (len(result) == 0):
+            table.setColumnCount(1)
+
+        else:
+            table.setColumnCount(len(result[0]))
+        
+        #cursor.execute(f"DESCRIBE {}")
+
+        heading_list = ["Departament"]
+
+        table.setColumnCount(len(heading_list))
+
+        table.setHorizontalHeaderLabels(heading_list)
+        table.adjustSize()
+
+        for r_index, row in enumerate(result):
+            for c_index, col in enumerate(row):
+                table.setItem(r_index, c_index, QTableWidgetItem(str(col)))
+       
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
+
 
 class StartWindow(QMainWindow):
     def __init__(self):
@@ -538,9 +1642,12 @@ class StartWindow(QMainWindow):
         except mysql.connector.Error as err:
             print(err)
 
+        app_functions_layout = QVBoxLayout()
+
         window_layout = QHBoxLayout()
 
         ### Equipment
+
         button_layout = QVBoxLayout()
 
         button = QPushButton("Show Equipment")
@@ -582,13 +1689,120 @@ class StartWindow(QMainWindow):
 
         window_layout.addLayout(button_layout)
 
+        ### Employee History
+        button_layout = QVBoxLayout()
+
+        button = QPushButton("Show Employee history")
+        button.clicked.connect(self.slot_show_employee_history)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Add to Employee history")
+        button.clicked.connect(self.slot_add_employee_history)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Edit Employee history")
+        button.clicked.connect(self.slot_edit_employee_history)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Delete from Employee history")
+        button.clicked.connect(self.slot_delete_employee_history)
+        button_layout.addWidget(button)
+
+        window_layout.addLayout(button_layout)
+
+        ### Equipment ownership
+        button_layout = QVBoxLayout()
+
+        button = QPushButton("Show Equipment ownership")
+        button.clicked.connect(self.slot_show_equipment_ownership)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Add to Equipment ownership")
+        button.clicked.connect(self.slot_add_equipment_ownership)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Edit Equipment ownership")
+        button.clicked.connect(self.slot_edit_equipment_ownership)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Delete from Equipment ownership")
+        button.clicked.connect(self.slot_delete_equipment_ownership)
+        button_layout.addWidget(button)
+
+        window_layout.addLayout(button_layout)
+
+        ### Equipment repair
+        button_layout = QVBoxLayout()
+
+        button = QPushButton("Show Equipment repair")
+        button.clicked.connect(self.slot_show_equipment_repair)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Add to Equipment repair")
+        button.clicked.connect(self.slot_add_equipment_repair)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Edit Equipment repair")
+        button.clicked.connect(self.slot_edit_equipment_repair)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Delete from Equipment repair")
+        button.clicked.connect(self.slot_delete_equipment_repair)
+        button_layout.addWidget(button)
+
+        window_layout.addLayout(button_layout)
+
+        ### Repair document
+        button_layout = QVBoxLayout()
+
+        button = QPushButton("Show Repair document")
+        button.clicked.connect(self.slot_show_repair_document)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Add to Repair document")
+        button.clicked.connect(self.slot_add_repair_document)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Edit Repair document")
+        button.clicked.connect(self.slot_edit_repair_document)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Delete from Repair document")
+        button.clicked.connect(self.slot_delete_repair_document)
+        button_layout.addWidget(button)
+
+        window_layout.addLayout(button_layout)
+
+        ### Functions
+        button_layout = QVBoxLayout()
+
+        button = QPushButton("Count of equipment by departament(3 years)")
+        button.clicked.connect(self.slot_show_equipment_count)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Get employees by departament")
+        button.clicked.connect(self.slot_show_employee_by_departament)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Get employees by old and sex")
+        button.clicked.connect(self.slot_show_employee_by_sex_and_old)
+        button_layout.addWidget(button)
+
+        button = QPushButton("Get the most repairiest departament")
+        button.clicked.connect(self.slot_show_repairiest_departament)
+        button_layout.addWidget(button)
+
+        app_functions_layout.addLayout(window_layout)
+        app_functions_layout.addLayout(button_layout)
+
         widget = QWidget()
-        widget.setLayout(window_layout)
+        widget.setLayout(app_functions_layout)
+
 
         self.setCentralWidget(widget)
 
         self.setWindowTitle("P _ B _ Z")
-        self.setFixedSize(QSize(800, 600))
+        self.setFixedSize(QSize(1200, 600))
 
     def slot_show_equipment(self):
         dialog = ShowEquipment(self.db)
@@ -599,7 +1813,7 @@ class StartWindow(QMainWindow):
         dialog = AddEquipmentDialog(self.db)
         dialog.setMinimumSize(QSize(600, 600))
         dialog.exec()
-
+        
     def slot_edit_equipment(self):
         dialog = EditEquipmentDialog(self.db)
         dialog.setMinimumSize(QSize(600, 600))
@@ -630,6 +1844,105 @@ class StartWindow(QMainWindow):
         dialog.setMinimumSize(QSize(600, 600))
         dialog.exec()
 
+    def slot_show_employee_history(self):
+        dialog = ShowEmployeeHistory(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_add_employee_history(self):
+        dialog = AddEmployeeHistoryDialog(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_edit_employee_history(self):
+        dialog = EditEmployeeHistoryDialog(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_delete_employee_history(self):
+        dialog = DeleteEmployeeHistoryDialog(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_equipment_ownership(self):
+        dialog = ShowEquipmentOwnership(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_add_equipment_ownership(self):
+        dialog = AddEquipmentOwnership(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_edit_equipment_ownership(self):
+        dialog = EditEquipmentOwnership(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_delete_equipment_ownership(self):
+        dialog = DeleteEquipmentOwnership(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_equipment_repair(self):
+        dialog = ShowEquipmentRepair(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_add_equipment_repair(self):
+        dialog = AddEquipmentRepair(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_edit_equipment_repair(self):
+        dialog = EditEquipmentRepair(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_delete_equipment_repair(self):
+        dialog = DeleteEquipmentRepair(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_repair_document(self):
+        dialog = ShowRepairDocument(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_add_repair_document(self):
+        dialog = AddRepairDocument(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_edit_repair_document(self):
+        dialog = EditRepairDocument(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_delete_repair_document(self):
+        dialog = DeleteRepairDocument(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_equipment_count(self):
+        dialog = CountOfEquipment(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_employee_by_departament(self):
+        dialog = EmployeesByDepartament(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_employee_by_sex_and_old(self):
+        dialog = EmployeesBySexAndOld(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_repairiest_departament(self):
+        dialog = ShowRepairiestDepartament(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
 
 
 if __name__ == '__main__':
