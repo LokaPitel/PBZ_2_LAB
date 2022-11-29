@@ -49,18 +49,18 @@ def delete_from_history(cursor, p_id, date_of_start):
                       WHERE p_id = %s AND date_of_start = %s""", (p_id, date_of_start))
 
 
-def delete_employee(cursor, p_id):
-    cursor.execute("""INSERT INTO deleted_employee
-                      VALUES (%s)""", (p_id,))
+#def delete_employee(cursor, p_id):
+#    cursor.execute("""INSERT INTO deleted_employee
+#                      VALUES (%s)""", (p_id,))
 
 
-def edit_of_deleted_employee(cursor, old_p_id, new_p_id):
-    cursor.execute("""UPDATE deleted_employee
-                      SET p_id = %s
-                      WHERE p_id = %s""", (new_p_id, old_p_id))
+#def edit_of_deleted_employee(cursor, old_p_id, new_p_id):
+#    cursor.execute("""UPDATE deleted_employee
+#                      SET p_id = %s
+#                      WHERE p_id = %s""", (new_p_id, old_p_id))
 
 
-def undelete_employee(cursor, p_id):
-    cursor.execute("""DELETE FROM deleted_employee
-                      WHERE p_id = %s""", (p_id,))
+#def undelete_employee(cursor, p_id):
+#    cursor.execute("""DELETE FROM deleted_employee
+#                      WHERE p_id = %s""", (p_id,))
 

@@ -30,9 +30,9 @@ def delete_from_repair_by_pid(cursor, p_id):
     cursor.execute("""DELETE FROM equipment_repair
                       WHERE querier_id = %s OR applying_id = %s OR repairing_id = %s""", (p_id, p_id, p_id))
 
-def delete_from_repair(cursor, e_id, repair_date):
+def delete_from_repair(cursor, e_id, part_name, repair_date):
     cursor.execute("""DELETE FROM equipment_repair
-                      WHERE e_id = %s AND repair_date = %s""", (e_id, repair_date))
+                      WHERE e_id = %s AND part_name = %s AND repair_date = %s""", (e_id, part_name, repair_date))
 
 
 def add_to_document(cursor, r_id, part_name, date_of_buy, price):

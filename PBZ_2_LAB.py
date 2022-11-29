@@ -1174,16 +1174,12 @@ class EditRepairDocument(QDialog):
         
         layout = QFormLayout()
 
-        self.e_id = QLineEdit()
-        self.repair_date = QDateEdit()
-        self.repair_type = QLineEdit()
-        self.repair_time = QLineEdit()
-        self.querier_id = QLineEdit()
-        self.applying_id = QLineEdit()
-        self.repairing_id = QLineEdit()
         self.r_id = QLineEdit()
+        self.part_name = QLineEdit()
+        self.date_of_buy = QDateEdit()
+        self.price = QLineEdit()
 
-        self.repair_date.setDisplayFormat('yyyy-MM-dd')
+        self.date_of_buy.setDisplayFormat('yyyy-MM-dd')
 
         button_layout = QHBoxLayout()
 
@@ -1199,14 +1195,10 @@ class EditRepairDocument(QDialog):
 
         button_layout.addWidget(cancel_button)
 
-        layout.addRow("Id: ", self.e_id)
-        layout.addRow("Repair date: ", self.repair_date)
-        layout.addRow("Repair type: ", self.repair_type)
-        layout.addRow("Repair time: ", self.repair_time)
-        layout.addRow("Querier id: ", self.querier_id)
-        layout.addRow("Applying id: ", self.applying_id)
-        layout.addRow("Repairing id: ", self.repairing_id)
-        layout.addRow("Document id: ", self.r_id)
+        layout.addRow("Id: ", self.r_id)
+        layout.addRow("Part name: ", self.part_name)
+        layout.addRow("Date of buy: ", self.date_of_buy)
+        layout.addRow("Price: ", self.price)
         
         dialog_layout.addLayout(layout)
         dialog_layout.addLayout(button_layout)
@@ -1215,9 +1207,8 @@ class EditRepairDocument(QDialog):
 
     def save_to_db(self):
         try:
-            edit_of_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text(), self.repair_type.text(),
-                           self.repair_time.text(), self.querier_id.text(), self.applying_id.text(), self.repairing_id.text(),
-                           self.r_id.text())
+            edit_of_document(self.db.cursor(buffered=True), self.r_id.text(), self.part_name.text(), self.date_of_buy.text(),
+                            self.price.text())
 
             self.db.commit()
 
@@ -1233,7 +1224,7 @@ class DeleteRepairDocument(QDialog):
     def __init__(self, db, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Edit field of Repair document")
+        self.setWindowTitle("Delete field of Repair document")
 
         self.db = db;
 
@@ -1242,6 +1233,7 @@ class DeleteRepairDocument(QDialog):
         layout = QFormLayout()
 
         self.e_id = QLineEdit()
+        self.part_name = QLineEdit()
         self.repair_date = QDateEdit()
 
         self.repair_date.setDisplayFormat('yyyy-MM-dd')
@@ -1261,6 +1253,7 @@ class DeleteRepairDocument(QDialog):
         button_layout.addWidget(cancel_button)
 
         layout.addRow("Id: ", self.e_id)
+        layout.addRow("Part name: ", self.part_name)
         layout.addRow("Repair date: ", self.repair_date)
         
         dialog_layout.addLayout(layout)
@@ -1270,7 +1263,7 @@ class DeleteRepairDocument(QDialog):
 
     def save_to_db(self):
         try:
-            delete_from_repair(self.db.cursor(buffered=True), self.e_id.text(), self.repair_date.text())
+            delete_from_repair(self.db.cursor(buffered=True), self.e_id.text(), self.part_name, self.repair_date.text())
 
             self.db.commit()
             self.close()
@@ -1568,7 +1561,10 @@ class ShowRepairiestDepartament(QDialog):
         cursor = db.cursor(buffered=True)
 
         cursor.execute("""
-        SELECT t1.departament, COUNT(t1.e_id) as repair_count
+        SELECT departament
+        FROM
+
+        (SELECT t1.departament, COUNT(t1.e_id) as repair_count
 
         FROM
 
@@ -1593,6 +1589,9 @@ class ShowRepairiestDepartament(QDialog):
 
         WHERE er.e_id = t1.e_id AND repair_date BETWEEN start AND end
         GROUP BY departament
+        ) as t1
+
+        HAVING MAX(repair_count)
         """)
 
         result = cursor.fetchall()
@@ -1624,6 +1623,93 @@ class ShowRepairiestDepartament(QDialog):
 
         self.setLayout(layout)
 
+
+class ShowSumOf(QDialog):
+    def __init__(self, db, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Count of equipment")
+        self.db = db
+
+        self.r_id = QLineEdit()
+
+        dialog_layout = QVBoxLayout()
+        layout = QFormLayout()
+
+        #self.last_year.setDisplayFormat('yyyy-MM-dd')
+
+        button_layout = QHBoxLayout()
+
+        apply_button = QPushButton("Apply")
+        apply_button.clicked.connect(self.slot_show_count)
+        apply_button.show()
+
+        button_layout.addWidget(apply_button)
+
+        cancel_button = QPushButton("Cancel")
+        cancel_button.clicked.connect(self.close_dialog)
+        cancel_button.show()
+
+        button_layout.addWidget(cancel_button)
+
+        layout.addRow("Repair document id: ", self.r_id)
+
+        dialog_layout.addLayout(layout)
+        dialog_layout.addLayout(button_layout)
+
+        self.setLayout(dialog_layout)
+
+
+    def slot_show_count(self):
+        dialog = ShowSum(self.db, self.r_id.text())
+        dialog.exec()
+
+    def close_dialog(self):
+        self.close()
+
+class ShowSum(QDialog):
+    def __init__(self, db, r_id, parent=None,):
+        super().__init__(parent)
+
+        self.setWindowTitle("Equipment repair table")
+
+        table = QTableWidget()
+
+        cursor = db.cursor(buffered=True)
+
+        cursor.execute("""
+        SELECT SUM(price)
+        FROM repair_document
+        WHERE r_id = %s""", (r_id,))
+
+        result = cursor.fetchall()
+
+        table.setRowCount(len(result))
+
+        if (len(result) == 0):
+            table.setColumnCount(1)
+
+        else:
+            table.setColumnCount(len(result[0]))
+        
+        #cursor.execute(f"DESCRIBE {}")
+
+        heading_list = ["Sum"]
+
+        table.setColumnCount(len(heading_list))
+
+        table.setHorizontalHeaderLabels(heading_list)
+        table.adjustSize()
+
+        for r_index, row in enumerate(result):
+            for c_index, col in enumerate(row):
+                table.setItem(r_index, c_index, QTableWidgetItem(str(col)))
+       
+
+        layout = QVBoxLayout()
+        layout.addWidget(table)
+
+        self.setLayout(layout)
 
 class StartWindow(QMainWindow):
     def __init__(self):
@@ -1775,6 +1861,10 @@ class StartWindow(QMainWindow):
 
         ### Functions
         button_layout = QVBoxLayout()
+
+        button = QPushButton("Get sum for repair")
+        button.clicked.connect(self.slot_show_sum_of_repair)
+        button_layout.addWidget(button)
 
         button = QPushButton("Count of equipment by departament(3 years)")
         button.clicked.connect(self.slot_show_equipment_count)
@@ -1941,6 +2031,11 @@ class StartWindow(QMainWindow):
 
     def slot_show_repairiest_departament(self):
         dialog = ShowRepairiestDepartament(self.db)
+        dialog.setMinimumSize(QSize(600, 600))
+        dialog.exec()
+
+    def slot_show_sum_of_repair(self):
+        dialog = ShowSumOf(self.db)
         dialog.setMinimumSize(QSize(600, 600))
         dialog.exec()
 
